@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Getting Started</title>
+		<script src="https://unpkg.com/lodash@4.16.6"></script>
+	</head>
+	<body>
+		<div id="test" style="width:100px;height:100px;background: black"></div>
+		<script src="./build/main.js"></script>
+		<script>
+			window.onload = function() {
+				let targetMoveable = new moveable(document.getElementById("test"), {
+					draggable: true,
+					resizable: true,
+				});
+				let startTranslate = [0, 0];
+				targetMoveable
+					.on("dragStart", ({ set }) => {
+						set(startTranslate);
+					})
+					.on("drag", ({ target, translate }) => {
+						startTranslate = translate;
+						target.style.transform = `translate(${translate[0]}px,${translate[1]}px)`;
+					});
+
+				targetMoveable.request("draggable", { x: 100, y: 100 });
+				targetMoveable.request("draggable", { deltaX: 100, deltaY: 100 });
+				targetMoveable.request("draggable", { x: 100, y: 100 });
+			};
+		</script>
+	</body>
+</html>
