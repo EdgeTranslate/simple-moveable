@@ -4,14 +4,17 @@ const path = require("path");
 module.exports = {
 	entry: "./src/moveable.ts",
 	output: {
-		filename: "[name].js",
-		path: path.resolve(__dirname, "../build"),
+		filename: "index.js",
+		path: path.resolve(__dirname, "../dist"),
+		library: "moveable",
+		libraryExport: "default",
+		libraryTarget: "umd",
 	},
 	module: {
 		rules: [
 			{
 				test: [/\.css$/],
-				use: "raw-loader",
+				loader: "raw-loader",
 			},
 			{ test: /\.tsx?$/, loader: "ts-loader" },
 		],

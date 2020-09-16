@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Getting Started</title>
-		<script src="https://unpkg.com/lodash@4.16.6"></script>
+		<title>Simple Moveable</title>
 	</head>
 	<body>
 		<div id="test" style="width:100px;height:100px;background: black"></div>
-		<script src="./build/main.js"></script>
+		<script src="../dist/index.js"></script>
 		<script>
 			window.onload = function() {
 				let targetMoveable = new moveable(document.getElementById("test"), {
@@ -21,6 +20,18 @@
 					.on("drag", ({ target, translate }) => {
 						startTranslate = translate;
 						target.style.transform = `translate(${translate[0]}px,${translate[1]}px)`;
+					})
+					.on("resizeStart", ({ set }) => {
+						set(startTranslate);
+					})
+					.on("resize", ({ target, width, height, translate, inputEvent }) => {
+						target.style.width = `${width}px`;
+						target.style.height = `${height}px`;
+						target.style.transform = `translate(${translate[0]}px, ${translate[1]}px)`;
+					})
+					.on("resizeEnd", ({ translate, width, height, inputEvent, target }) => {
+						startTranslate = translate;
+						target.style.transform = `translate(${translate[0]}px, ${translate[1]}px)`;
 					});
 
 				targetMoveable.request("draggable", { x: 100, y: 100 });

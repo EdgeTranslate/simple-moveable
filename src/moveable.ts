@@ -4,8 +4,8 @@
  * function: add moveable(draggable and resizable) function to a specific element
  */
 
-import resizable from "./resizable";
-import draggable from "./draggable";
+import resizable from "./resizable.ts";
+import draggable from "./draggable.ts";
 
 export default class moveable {
 	constructor(targetElement, options) {

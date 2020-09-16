@@ -2,12 +2,11 @@
 	"name": "simple-moveable",
 	"version": "0.0.0",
 	"description": "Simple and lightweight implementation of moveable API",
-	"main": "moveable.ts",
+	"main": "./dist/index.js",
 	"scripts": {
 		"test": "jest",
 		"dev": "webpack --config config/webpack.dev.config.js",
-		"build": "webpack",
-		"my": "webpack --help"
+		"build": "webpack --config config/webpack.prod.config.js"
 	},
 	"keywords": [
 		"moveable",
@@ -19,6 +18,7 @@
 	"author": "Mark-Fenng",
 	"license": "MIT",
 	"devDependencies": {
+		"@types/css": "0.0.31",
 		"@types/jest": "^24.0.25",
 		"@types/node": "^13.1.1",
 		"@typescript-eslint/eslint-plugin": "^2.13.0",
@@ -30,6 +30,7 @@
 		"jest": "^26.4.0",
 		"jest-raw-loader": "^1.0.1",
 		"prettier": "^1.19.1",
+		"raw-loader": "^0.5.1",
 		"ts-jest": "^24.2.0",
 		"ts-loader": "^8.0.3",
 		"typescript": "^3.7.4",
