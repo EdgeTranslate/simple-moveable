@@ -27,10 +27,10 @@ module.exports = {
 	rules: {
 		"@typescript-eslint/no-var-requires": 1,
 		"@typescript-eslint/explicit-function-return-type": 2,
-		"@typescript-eslint/explicit-member-accessibility": 2,
+		"@typescript-eslint/class-name-casing": 0,
 		"no-unused-vars": 2,
 		semi: [2, "always", { omitLastInOneLineBlock: true }],
-		indent: ["error", 4, { SwitchCase: 1 }],
+		indent: ["error", "tab", { SwitchCase: 1 }],
 		quotes: ["error", "double"],
 		// 空行最多不能超过100行
 		"no-multiple-empty-lines": [0, { max: 120 }],

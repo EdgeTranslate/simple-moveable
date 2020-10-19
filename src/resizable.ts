@@ -1,12 +1,7 @@
-/**
- * module: content
- * part: display.moveable
- * function: add resizable function to a specific element
- */
-
 import css from "css";
 import style from "./resizable.css"; // read plain content from css file
 
+// eslint-disable-next-line @typescript-eslint/class-name-casing
 export default class resizable {
 	constructor(targetElement, options, handlers) {
 		this.targetElement = targetElement;

@@ -16,13 +16,14 @@ module.exports = {
 				test: [/\.css$/],
 				loader: "raw-loader",
 			},
-			{ test: /\.tsx?$/, loader: "ts-loader" },
+			{ test: /\.tsx?$/, use: ["ts-loader"], exclude: /node_modules/ },
 		],
 	},
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "../src"),
 		},
+		extensions: [".tsx", ".ts", ".js", ".json"],
 	},
 	node: {
 		fs: "empty",
