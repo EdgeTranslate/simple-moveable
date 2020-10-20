@@ -3,27 +3,29 @@ export default class draggable {
 	options: {
 		bounds: null;
 	};
-	handlers = { dragStart: null, drag: null, dragEnd: null, boundStart: null, bound: null, boundEnd: null };
+	// store all handlers given by users
+	handlers: draggableHandler = {} as draggableHandler;
 
 	// flag if the element is dragging
 	dragging = false;
 	// store some drag status value
-	store = {
-		startTranslate: [],
-		startMouse: [],
-		startElement: { left: 0, top: 0, right: 0, bottom: 0 },
-		currentTranslate: [],
-	};
+	store: StoreType = { startTranslate: [0, 0] } as StoreType;
 	// store the drag bounds setting
-	bounds: bounds;
+	bounds: PositionType;
 	// flag if the bound event activated
 	bounding = false;
 
-	dragStartHandler: EventListener;
+	// wrap a drag start mouse event handler
+	dragStartEventHandler: EventListener = (event: MouseEvent): void => {
+		this.dragStart(event);
+	};
 
-	dragHandler: EventListener;
+	// wrap a drag(dragging) mouse event handler
+	dragEventHandler: EventListener = (event: MouseEvent): void => {
+		this.drag(event);
+	};
 
-	constructor(targetElement, options, handlers) {
+	constructor(targetElement: HTMLElement, options, handlers) {
 		this.targetElement = targetElement;
 		this.options = options;
 		this.handlers = handlers;
@@ -33,28 +35,20 @@ export default class draggable {
 
 	/**
 	 * do some initial thing for draggable function
-	 * 1. generate drag start and drag event handlers by wrapping this.dragStart and this.drag
-	 * 2. add mouse down event listener to the target draggable element
+	 * 1. add mouse down event listener to the target draggable element
+	 * 2. call this.dragEnd() (add mouse up event listener to the target element)
 	 */
-	dragInitiate(): void {
-		this.dragEnd();
+	private dragInitiate(): void {
 		this.setBounds(this.options.bounds);
-		// wrap a drag start event handler
-		this.dragStartHandler = function(e: MouseEvent): void {
-			this.dragStart(e);
-		}.bind(this);
-		// wrap a drag(dragging) event handler
-		this.dragHandler = function(e: MouseEvent): void {
-			this.drag(e);
-		}.bind(this);
-		this.targetElement.addEventListener("mousedown", this.dragStartHandler);
+		this.targetElement.addEventListener("mousedown", this.dragStartEventHandler);
+		this.dragEnd();
 	}
 
 	/**
 	 * parse the bounds option(e.g.: {left:0, right:100,top:0,bottom:100}) given by users. If one direction is not defined, set an infinity value.
-	 * @param {bounds} boundsOption the given bounds option
+	 * @param {Partial<PositionType>} boundsOption the given bounds option
 	 */
-	static parseBounds(boundsOption: { left?: number; top?: number; right?: number; bottom?: number }): bounds {
+	static parseBounds(boundsOption: Partial<PositionType>): PositionType {
 		const bounds = { left: 0, top: 0, right: 0, bottom: 0 };
 		boundsOption = boundsOption || {};
 		bounds.left = boundsOption.left !== undefined ? boundsOption.left : Number.NEGATIVE_INFINITY;
@@ -66,9 +60,9 @@ export default class draggable {
 
 	/**
 	 * set a new bounds option
-	 * @param {object} boundsOption the given bounds option
+	 * @param {Partial<PositionType>} boundsOption the given bounds option
 	 */
-	setBounds(boundsOption: { left?: number; top?: number; right?: number; bottom?: number }): void {
+	setBounds(boundsOption: Partial<PositionType>): void {
 		this.bounds = draggable.parseBounds(boundsOption);
 	}
 
@@ -80,16 +74,14 @@ export default class draggable {
 	private dragStart(e: MouseEvent): void {
 		if ((e.target as HTMLElement).getAttribute("class") === "resizable-div") return;
 		this.dragging = true;
-		// store the start css translate value. [x,y]
-		this.store.startTranslate = [];
-		// store the start mouse absolute position. [x,y]
+
 		this.store.startMouse = [e.pageX, e.pageY];
 		const offset = [
 			this.targetElement.getBoundingClientRect().left + document.documentElement.scrollLeft,
 			this.targetElement.getBoundingClientRect().top + document.documentElement.scrollTop,
 		];
 		// store the start element absolute position. {left:leftOffset,top: topOffset,right:rightOffset,bottom:bottomOffset}
-		this.store.startElement = {
+		this.store.startElementPosition = {
 			left: offset[0],
 			top: offset[1],
 			right: offset[0] + this.targetElement.offsetWidth,
@@ -117,7 +109,7 @@ export default class draggable {
 
 		if (this.dragging) {
 			e.preventDefault();
-			document.documentElement.addEventListener("mousemove", this.dragHandler);
+			document.documentElement.addEventListener("mousemove", this.dragEventHandler);
 		}
 	}
 
@@ -133,14 +125,14 @@ export default class draggable {
 		// calculate the current translate value
 		const currentTranslate = [delta[0] + this.store.startTranslate[0], delta[1] + this.store.startTranslate[1]];
 		// update right and bottom value. cause the size of the target value might change
-		this.store.startElement.right = this.store.startElement.left + this.targetElement.offsetWidth;
-		this.store.startElement.bottom = this.store.startElement.top + this.targetElement.offsetHeight;
+		this.store.startElementPosition.right = this.store.startElementPosition.left + this.targetElement.offsetWidth;
+		this.store.startElementPosition.bottom = this.store.startElementPosition.top + this.targetElement.offsetHeight;
 		// calculate the distance between the bounds and the current element position
 		const boundsDistance = {
-			left: this.bounds.left - (delta[0] + this.store.startElement.left),
-			top: this.bounds.top - (delta[1] + this.store.startElement.top),
-			right: delta[0] + this.store.startElement.right - this.bounds.right,
-			bottom: delta[1] + this.store.startElement.bottom - this.bounds.bottom,
+			left: this.bounds.left - (delta[0] + this.store.startElementPosition.left),
+			top: this.bounds.top - (delta[1] + this.store.startElementPosition.top),
+			right: delta[0] + this.store.startElementPosition.right - this.bounds.right,
+			bottom: delta[1] + this.store.startElementPosition.bottom - this.bounds.bottom,
 		};
 		// flag whether the current position beyond the drag area
 		let flag = false;
@@ -205,7 +197,7 @@ export default class draggable {
 		document.documentElement.addEventListener("mouseup", e => {
 			if (this.dragging) {
 				this.dragging = false;
-				document.documentElement.removeEventListener("mousemove", this.dragHandler);
+				document.documentElement.removeEventListener("mousemove", this.dragEventHandler);
 				if (this.handlers.dragEnd)
 					this.handlers.dragEnd({
 						inputEvent: e,
@@ -266,8 +258,6 @@ export default class draggable {
 
 		/* drag start */
 		this.dragging = true;
-		// store the start css translate value. [x,y]
-		this.store.startTranslate = [];
 
 		this.handlers.dragStart &&
 			this.handlers.dragStart({
@@ -297,9 +287,38 @@ export default class draggable {
 	}
 }
 
-interface bounds {
+/**
+ * define the data structure for the bounds option or the position of HTMLElement
+ */
+interface PositionType {
 	left: number;
 	top: number;
 	right: number;
 	bottom: number;
+}
+
+/**
+ * store some value used in draggable functions
+ */
+interface StoreType {
+	// store the start css translate value. [x,y]
+	startTranslate: [number, number];
+	// store the start mouse absolute position. [x,y]
+	startMouse: [number, number];
+	// store the start HTMLElement position in the page
+	startElementPosition: PositionType;
+	// store the current css translate value. [x,y]
+	currentTranslate: [number, number];
+}
+
+/**
+ * store all handlers given by users
+ */
+interface draggableHandler {
+	dragStart: Function;
+	drag: Function;
+	dragEnd: Function;
+	boundStart: Function;
+	bound: Function;
+	boundEnd: Function;
 }
